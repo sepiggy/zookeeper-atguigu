@@ -10,10 +10,13 @@ import java.util.List;
 
 public class zkClient {
 
-    // 注意：逗号左右不能有空格
-    private String connectString = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
-    private int sessionTimeout = 2000;
     private ZooKeeper zkClient;
+
+    // 注意：逗号左右不能有空格
+    // private String connectString = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
+    private String connectString = "localhost:2181";
+
+    private int sessionTimeout = 2000;
 
     @Before
     public void init() throws IOException {
@@ -25,6 +28,8 @@ public class zkClient {
 //                System.out.println("-------------------------------");
 //                List<String> children = null;
 //                try {
+//                    // 每次监听事件触发都手动再注册一次
+//                    // 因为监听事件注册一次生效一次
 //                    children = zkClient.getChildren("/", true);
 //
 //                    for (String child : children) {
@@ -41,28 +46,44 @@ public class zkClient {
         });
     }
 
+    // 通过客户端创建节点
     @Test
     public void create() throws KeeperException, InterruptedException {
-        String nodeCreated = zkClient.create("/atguigu", "ss.avi".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        String nodeCreated = zkClient.create("/girl",
+                "dozy".getBytes(),
+                ZooDefs.Ids.OPEN_ACL_UNSAFE,
+                CreateMode.PERSISTENT);
     }
 
+    // 通过客户端进行节点目录监听
     @Test
     public void getChildren() throws KeeperException, InterruptedException {
+
+        // 使用初始化中注册的监听器
         List<String> children = zkClient.getChildren("/", true);
+
+//        List<String> children = zkClient.getChildren("/", new Watcher() {
+//
+//            @Override
+//            public void process(WatchedEvent watchedEvent) {
+//
+//            }
+//        });
 
         for (String child : children) {
             System.out.println(child);
         }
 
-        // 延时
+        // 保持运行
         Thread.sleep(Long.MAX_VALUE);
     }
 
+    // 判断节点是否存在
     @Test
     public void exist() throws KeeperException, InterruptedException {
 
-        Stat stat = zkClient.exists("/atguigu", false);
+        Stat stat = zkClient.exists("/girl", false);
 
-        System.out.println(stat==null? "not exist " : "exist");
+        System.out.println(stat == null ? "not exist " : "exist");
     }
 }
